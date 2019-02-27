@@ -1,7 +1,16 @@
 <template>
     <div>
         <div>
-            <div v-for='(tag, index) in tags' @click='hideClass(tag)' :key='"tag_"+index'>{{tag}}</div>
+            <div v-for='tag in Object.keys(deviceTags)'
+            :class="{ 'gray-text' : !deviceTags[tag] }"
+            @click='hideClass(tag, "deviceTags")' 
+            :key='"tag-" + tag'>{{tag}}</div>
+        </div>
+        <div>
+            <div v-for='tag in Object.keys(pageTags)'
+            :class="{ 'gray-text' : !pageTags[tag] }"
+            @click='hideClass(tag, "pageTags")' 
+            :key='"tag-" + tag'>{{tag}}</div>
         </div>
         <div v-for='(test, index) in tests' :key="'test_' + index"
             :class="{ hidden: test.hidden }">
@@ -22,7 +31,9 @@ export default {
     data: function() {
         return {
             tests: [],
-            tags: []
+            deviceTags: {},
+            pageTags: {},
+            resultTags: []
         }
     },
     created: function () {
@@ -39,20 +50,21 @@ export default {
                         hidden: false
                     }
                     this.tests.push(test)
-                    !this.tags.includes(test.pages) && this.tags.push(test.pages)
-                    !this.tags.includes(test.devices) && this.tags.push(test.devices)
+                    this.pageTags[test.pages] = true
+                    this.deviceTags[test.devices] = true
                 })
                 console.log(response)
             })
 
     },
     methods: {
-        hideClass: function (t) {
-            console.log(t)
+        hideClass: function (tag,tagType) {
+            console.log(tag)
             this.tests.forEach((e, i) => {
-                if(e.devices == t) this.tests[i].hidden = !this.tests[i].hidden
-                if(e.pages == t) this.tests[i].hidden = !this.tests[i].hidden
+                if(e.devices == tag) this.tests[i].hidden = !this.tests[i].hidden
+                if(e.pages == tag) this.tests[i].hidden = !this.tests[i].hidden
             })
+            this[tagType][tag] = !this[tagType][tag]
         }
     }
 }
@@ -75,5 +87,9 @@ export default {
 
     .hidden {
         display: none
+    }
+
+    .gray-text {
+        color:gray
     }
 </style>
