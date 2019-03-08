@@ -1,19 +1,25 @@
 <template>
     <div>
-        <div>
+        <div class='filter-item-container'>
+            <div class='filter-items-header'>Device Types</div>
             <div v-for='tag in Object.keys(deviceTags)'
-            :class="{ 'gray-text' : !deviceTags[tag] }"
-            @click='hideClass(tag, "deviceTags")' 
+            :class="{ 'gray-text' : (selectedDevices.length && !selectedDevices.includes(tag)) }"
+            class='filter-item'
+            @click='hideClass(tag, "device")' 
             :key='"tag-" + tag'>{{tag}}</div>
         </div>
-        <div>
+        <div class='filter-item-container'>
+            <div class='filter-items-header'>Page Types</div>
             <div v-for='tag in Object.keys(pageTags)'
-            :class="{ 'gray-text' : !pageTags[tag] }"
-            @click='hideClass(tag, "pageTags")' 
+            :class="{ 'gray-text' : (selectedPages.length && !selectedPages.includes(tag))}"
+            class='filter-item'
+            @click='hideClass(tag, "page")' 
             :key='"tag-" + tag'>{{tag}}</div>
         </div>
         <div v-for='(test, index) in tests' :key="'test_' + index"
-            :class="{ hidden: test.hidden }">
+            :class="{ 
+                hidden: (selectedDevices.length && !selectedDevices.includes(test.devices)) || (selectedPages.length && !selectedPages.includes(test.pages)) 
+                }">
             <span class='pages-tag tag'>{{test.pages}}</span>
             <span class='devices-tag tag'>{{test.devices}}</span>
             <a class='test-link' :href=test.href target='_blank'><div>{{test.name}}</div></a>
@@ -33,7 +39,9 @@ export default {
             tests: [],
             deviceTags: {},
             pageTags: {},
-            resultTags: []
+            resultTags: [],
+            selectedPages: [],
+            selectedDevices: []
         }
     },
     created: function () {
@@ -60,17 +68,54 @@ export default {
     methods: {
         hideClass: function (tag,tagType) {
             console.log(tag)
-            this.tests.forEach((e, i) => {
-                if(e.devices == tag) this.tests[i].hidden = !this.tests[i].hidden
-                if(e.pages == tag) this.tests[i].hidden = !this.tests[i].hidden
-            })
-            this[tagType][tag] = !this[tagType][tag]
+            var tagSource 
+            if(tagType == 'page'){ 
+                tagType = 'selectedPages' 
+                tagSource = 'pageTags'
+            } 
+            else {
+                tagType = 'selectedDevices'
+                tagSource = 'deviceTags'
+            }
+            if(this[tagType].includes(tag)){
+                const i = this[tagType].indexOf(tag)
+                this[tagType].splice(i,1)
+            } else {
+                this[tagType].push(tag)
+                if(this[tagType].length == Object.keys(this[tagSource]).length){
+                    this[tagType].length = 0
+                }
+            }
+            // this.tests.forEach((e, i) => {
+            //     if(e.devices == tag) this.tests[i].hidden = !this.tests[i].hidden
+            //     if(e.pages == tag) this.tests[i].hidden = !this.tests[i].hidden
+            // })
+            // this[tagType][tag] = !this[tagType][tag]
         }
     }
 }
 </script>
 
 <style>
+
+    .filter-item-container {
+        width: 40vw;
+        display: inline-block;
+        vertical-align: top;
+        padding: 5px
+    }
+
+    .filter-items-header {
+        font-weight: bold;
+        margin-bottom: 5px
+    }
+
+    .filter-item {
+        cursor: pointer;
+        padding: 10px;
+        user-select: none
+    }
+
     .test-link {
         display: inline-block;
         margin: 8px
